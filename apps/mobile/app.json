@@ -1,0 +1,19 @@
+{
+  "expo": {
+    "name": "GameFinder",
+    "slug": "gamefinder",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "gamefinder",
+    "userInterfaceStyle": "light",
+    "platforms": ["ios", "android"],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#f7f4ef"
+      }
+    }
+  }
+}

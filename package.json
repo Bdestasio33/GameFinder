@@ -1,0 +1,22 @@
+{
+  "name": "gamefinder",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "db:generate": "pnpm --filter @gamefinder/db generate",
+    "db:migrate": "pnpm --filter @gamefinder/db migrate",
+    "db:seed": "pnpm --filter @gamefinder/db seed",
+    "db:setup": "pnpm db:migrate && pnpm db:seed"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.4",
+    "typescript": "^5.8.3"
+  },
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=20"
+  }
+}

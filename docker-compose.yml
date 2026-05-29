@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: gamefinder-postgres
+    environment:
+      POSTGRES_USER: gamefinder
+      POSTGRES_PASSWORD: gamefinder
+      POSTGRES_DB: gamefinder
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gamefinder -d gamefinder"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

@@ -1,0 +1,10 @@
+{
+  "extends": "@gamefinder/config/tsconfig.react.json",
+  "compilerOptions": {
+    "jsx": "react-native",
+    "lib": ["ES2022"],
+    "types": ["react-native", "node"],
+    "noEmit": true
+  },
+  "include": ["App.tsx", "index.js"]
+}

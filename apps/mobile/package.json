@@ -1,0 +1,25 @@
+{
+  "name": "@gamefinder/mobile",
+  "version": "0.0.0",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "dev": "expo start",
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@gamefinder/shared": "workspace:*",
+    "expo": "^53.0.11",
+    "expo-status-bar": "~2.2.3",
+    "react": "19.0.0",
+    "react-native": "0.79.3"
+  },
+  "devDependencies": {
+    "@gamefinder/config": "workspace:*",
+    "@types/node": "^22.15.29",
+    "@types/react": "~19.0.14",
+    "typescript": "^5.8.3"
+  }
+}

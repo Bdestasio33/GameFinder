@@ -1,0 +1,80 @@
+:root {
+  color: #1f2933;
+  background: #f7f4ef;
+  font-family: "Segoe UI", sans-serif;
+  line-height: 1.5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin: 0 0 0.5rem;
+}
+
+h1,
+h2 {
+  margin: 0 0 0.75rem;
+}
+
+.lede,
+.status,
+.error {
+  margin: 0 0 1rem;
+}
+
+.games ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.games li {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+}
+
+.games span {
+  display: block;
+  color: #4b5563;
+  font-size: 0.95rem;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.tags span {
+  display: inline-block;
+  background: #eef2ff;
+  color: #3730a3;
+  border-radius: 999px;
+  padding: 0.15rem 0.65rem;
+  font-size: 0.8rem;
+}
+
+.error {
+  color: #b91c1c;
+}
