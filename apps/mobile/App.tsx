@@ -1,40 +1,59 @@
+import { ThemeProvider, createTheme } from "@rneui/themed";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Pressable,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from "react-native";
-import { healthResponseSchema } from "@gamefinder/shared";
+import { Button } from "@rneui/themed";
+import { API_URL, logout, type SessionUser } from "./src/api-client";
+import { LoginScreen } from "./src/LoginScreen";
 
-const apiUrl = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3001";
+const rneTheme = createTheme({
+  lightColors: {
+    primary: "#3730a3",
+  },
+});
 
-type GameListItem = {
+type VideoGame = {
   id: string;
   title: string;
+  slug: string;
   description: string | null;
-  minPlayers: number;
-  maxPlayers: number;
+  releaseYear: number | null;
+  minAgeRecommendation: number | null;
+  difficultyLevel: string;
+  expertiseRequired: string;
+  genres: Array<{ name: string; slug: string }>;
+  platforms: Array<{ name: string; slug: string }>;
+  playStyles: string[];
 };
 
-export default function App() {
-  const [health, setHealth] = useState("checking...");
-  const [games, setGames] = useState<GameListItem[]>([]);
+function CatalogApp() {
+  const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<SessionUser | null>(null);
+  const [games, setGames] = useState<VideoGame[]>([]);
+  const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function load() {
-      try {
-        const healthResponse = await fetch(`${apiUrl}/health`);
-        const healthJson = healthResponseSchema.parse(await healthResponse.json());
-        setHealth(`${healthJson.service} (${healthJson.database})`);
+    if (!token) {
+      return;
+    }
 
-        const gamesResponse = await fetch(`${apiUrl}/api/games`);
-        setGames((await gamesResponse.json()) as GameListItem[]);
+    async function load() {
+      setLoading(true);
+      try {
+        const response = await fetch(`${API_URL}/api/games`);
+        setGames((await response.json()) as VideoGame[]);
       } catch (loadError) {
         setError(
           loadError instanceof Error
@@ -47,37 +66,127 @@ export default function App() {
     }
 
     void load();
-  }, []);
+  }, [token]);
+
+  async function handleLogout() {
+    if (token) {
+      try {
+        await logout(token);
+      } catch {
+        // Ignore network errors during logout
+      }
+    }
+    setToken(null);
+    setUser(null);
+    setGames([]);
+    setSelectedSlug(null);
+    setSearch("");
+    setError(null);
+  }
+
+  const filteredGames = useMemo(
+    () =>
+      games.filter((game) =>
+        game.title.toLowerCase().includes(search.toLowerCase()),
+      ),
+    [games, search],
+  );
+
+  const selectedGame =
+    games.find((game) => game.slug === selectedSlug) ?? null;
+
+  if (!token || !user) {
+    return (
+      <LoginScreen
+        onLogin={(nextToken, nextUser) => {
+          setToken(nextToken);
+          setUser(nextUser);
+        }}
+      />
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.eyebrow}>GameFinder</Text>
-        <Text style={styles.title}>Mobile scaffold</Text>
-        <Text style={styles.body}>
-          Expo app wired to the shared API and domain packages.
-        </Text>
-        <Text style={styles.status}>API status: {health}</Text>
+        <View style={styles.headerRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.eyebrow}>GameFinder</Text>
+            <Text style={styles.title}>Video game catalog</Text>
+            <Text style={styles.body}>
+              {user.displayName} · {user.role}
+            </Text>
+          </View>
+          <Button
+            title="Logout"
+            type="outline"
+            onPress={() => void handleLogout()}
+            buttonStyle={styles.logoutButton}
+            titleStyle={styles.logoutTitle}
+          />
+        </View>
 
         {loading ? <ActivityIndicator /> : null}
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
-        {!loading && !error
-          ? games.map((game) => (
-              <View key={game.id} style={styles.card}>
+        {!selectedGame ? (
+          <>
+            <TextInput
+              style={styles.input}
+              placeholder="Search by title"
+              value={search}
+              onChangeText={setSearch}
+            />
+            {filteredGames.map((game) => (
+              <Pressable
+                key={game.id}
+                style={styles.card}
+                onPress={() => setSelectedSlug(game.slug)}
+              >
                 <Text style={styles.cardTitle}>{game.title}</Text>
                 <Text style={styles.cardMeta}>
-                  {game.minPlayers}-{game.maxPlayers} players
+                  {game.releaseYear ?? "?"} · Age {game.minAgeRecommendation ?? "?"}+
                 </Text>
-                {game.description ? (
-                  <Text style={styles.cardBody}>{game.description}</Text>
-                ) : null}
-              </View>
-            ))
-          : null}
+                <Text style={styles.cardBody}>{game.description}</Text>
+                <View style={styles.pillRow}>
+                  {game.genres.slice(0, 2).map((genre) => (
+                    <Text key={genre.slug} style={styles.pill}>
+                      {genre.name}
+                    </Text>
+                  ))}
+                </View>
+              </Pressable>
+            ))}
+          </>
+        ) : (
+          <View style={styles.card}>
+            <Pressable onPress={() => setSelectedSlug(null)}>
+              <Text style={styles.backLink}>← Back to catalog</Text>
+            </Pressable>
+            <Text style={styles.cardTitle}>{selectedGame.title}</Text>
+            <Text style={styles.cardMeta}>
+              {selectedGame.difficultyLevel} · {selectedGame.expertiseRequired}
+            </Text>
+            <Text style={styles.cardBody}>{selectedGame.description}</Text>
+            <Text style={styles.cardMeta}>
+              Platforms: {selectedGame.platforms.map((p) => p.name).join(", ")}
+            </Text>
+            <Text style={styles.cardMeta}>
+              Play styles: {selectedGame.playStyles.join(", ")}
+            </Text>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider theme={rneTheme}>
+      <CatalogApp />
+    </ThemeProvider>
   );
 }
 
@@ -89,6 +198,21 @@ const styles = StyleSheet.create({
   content: {
     padding: 24,
     gap: 12,
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
+    marginBottom: 8,
+  },
+  logoutButton: {
+    borderColor: "#3730a3",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+  },
+  logoutTitle: {
+    color: "#3730a3",
+    fontSize: 14,
   },
   eyebrow: {
     textTransform: "uppercase",
@@ -104,9 +228,14 @@ const styles = StyleSheet.create({
   body: {
     color: "#374151",
     lineHeight: 22,
+    marginBottom: 8,
   },
-  status: {
-    color: "#4b5563",
+  input: {
+    backgroundColor: "#fff",
+    borderColor: "#e5e7eb",
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
   },
   error: {
     color: "#b91c1c",
@@ -117,18 +246,35 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: "#e5e7eb",
+    gap: 8,
   },
   cardTitle: {
     fontSize: 18,
     fontWeight: "600",
-    marginBottom: 4,
   },
   cardMeta: {
     color: "#6b7280",
-    marginBottom: 8,
   },
   cardBody: {
     color: "#374151",
     lineHeight: 20,
+  },
+  pillRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  pill: {
+    backgroundColor: "#eef2ff",
+    color: "#3730a3",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    overflow: "hidden",
+    fontSize: 12,
+  },
+  backLink: {
+    color: "#3730a3",
+    marginBottom: 8,
   },
 });

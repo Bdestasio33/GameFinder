@@ -9,7 +9,9 @@
     "db:generate": "pnpm --filter @gamefinder/db generate",
     "db:migrate": "pnpm --filter @gamefinder/db migrate",
     "db:seed": "pnpm --filter @gamefinder/db seed",
-    "db:setup": "pnpm db:migrate && pnpm db:seed"
+    "db:setup": "pnpm db:migrate && pnpm db:seed",
+    "db:reset": "bash scripts/db-reset.sh",
+    "test": "turbo test"
   },
   "devDependencies": {
     "turbo": "^2.5.4",

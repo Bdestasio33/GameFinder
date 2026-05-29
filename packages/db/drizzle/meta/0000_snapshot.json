@@ -1,11 +1,11 @@
 {
-  "id": "f0944162-c5e3-4a80-bb96-1c8d5d113877",
+  "id": "b7ca4fe6-ab6a-4d6e-a948-25baf1e0cd19",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.age_ratings": {
-      "name": "age_ratings",
+    "public.age_suggestions": {
+      "name": "age_suggestions",
       "schema": "",
       "columns": {
         "id": {
@@ -27,15 +27,41 @@
           "primaryKey": false,
           "notNull": true
         },
-        "minimum_age": {
-          "name": "minimum_age",
+        "suggested_min_age": {
+          "name": "suggested_min_age",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
-        "notes": {
-          "name": "notes",
+        "rationale": {
+          "name": "rationale",
           "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "moderation_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "review_notes": {
+          "name": "review_notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reviewed_by": {
+          "name": "reviewed_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reviewed_at": {
+          "name": "reviewed_at",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -49,9 +75,9 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "age_ratings_game_id_games_id_fk": {
-          "name": "age_ratings_game_id_games_id_fk",
-          "tableFrom": "age_ratings",
+        "age_suggestions_game_id_games_id_fk": {
+          "name": "age_suggestions_game_id_games_id_fk",
+          "tableFrom": "age_suggestions",
           "tableTo": "games",
           "columnsFrom": [
             "game_id"
@@ -62,9 +88,9 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "age_ratings_user_id_users_id_fk": {
-          "name": "age_ratings_user_id_users_id_fk",
-          "tableFrom": "age_ratings",
+        "age_suggestions_user_id_users_id_fk": {
+          "name": "age_suggestions_user_id_users_id_fk",
+          "tableFrom": "age_suggestions",
           "tableTo": "users",
           "columnsFrom": [
             "user_id"
@@ -74,6 +100,19 @@
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
+        },
+        "age_suggestions_reviewed_by_users_id_fk": {
+          "name": "age_suggestions_reviewed_by_users_id_fk",
+          "tableFrom": "age_suggestions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "reviewed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -82,12 +121,137 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.collection_games": {
-      "name": "collection_games",
+    "public.expertise_suggestions": {
+      "name": "expertise_suggestions",
       "schema": "",
       "columns": {
-        "collection_id": {
-          "name": "collection_id",
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "game_id": {
+          "name": "game_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "suggested_difficulty": {
+          "name": "suggested_difficulty",
+          "type": "difficulty_level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "suggested_expertise": {
+          "name": "suggested_expertise",
+          "type": "expertise_level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rationale": {
+          "name": "rationale",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "moderation_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "review_notes": {
+          "name": "review_notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reviewed_by": {
+          "name": "reviewed_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reviewed_at": {
+          "name": "reviewed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "expertise_suggestions_game_id_games_id_fk": {
+          "name": "expertise_suggestions_game_id_games_id_fk",
+          "tableFrom": "expertise_suggestions",
+          "tableTo": "games",
+          "columnsFrom": [
+            "game_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "expertise_suggestions_user_id_users_id_fk": {
+          "name": "expertise_suggestions_user_id_users_id_fk",
+          "tableFrom": "expertise_suggestions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "expertise_suggestions_reviewed_by_users_id_fk": {
+          "name": "expertise_suggestions_reviewed_by_users_id_fk",
+          "tableFrom": "expertise_suggestions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "reviewed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.favorites": {
+      "name": "favorites",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -98,8 +262,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "added_at": {
-          "name": "added_at",
+        "created_at": {
+          "name": "created_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
@@ -108,12 +272,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "collection_games_collection_id_collections_id_fk": {
-          "name": "collection_games_collection_id_collections_id_fk",
-          "tableFrom": "collection_games",
-          "tableTo": "collections",
+        "favorites_user_id_users_id_fk": {
+          "name": "favorites_user_id_users_id_fk",
+          "tableFrom": "favorites",
+          "tableTo": "users",
           "columnsFrom": [
-            "collection_id"
+            "user_id"
           ],
           "columnsTo": [
             "id"
@@ -121,9 +285,9 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "collection_games_game_id_games_id_fk": {
-          "name": "collection_games_game_id_games_id_fk",
-          "tableFrom": "collection_games",
+        "favorites_game_id_games_id_fk": {
+          "name": "favorites_game_id_games_id_fk",
+          "tableFrom": "favorites",
           "tableTo": "games",
           "columnsFrom": [
             "game_id"
@@ -136,10 +300,10 @@
         }
       },
       "compositePrimaryKeys": {
-        "collection_games_collection_id_game_id_pk": {
-          "name": "collection_games_collection_id_game_id_pk",
+        "favorites_user_id_game_id_pk": {
+          "name": "favorites_user_id_game_id_pk",
           "columns": [
-            "collection_id",
+            "user_id",
             "game_id"
           ]
         }
@@ -149,113 +313,29 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.collections": {
-      "name": "collections",
+    "public.game_play_styles": {
+      "name": "game_play_styles",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "collections_user_id_users_id_fk": {
-          "name": "collections_user_id_users_id_fk",
-          "tableFrom": "collections",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.complexity_ratings": {
-      "name": "complexity_ratings",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
         "game_id": {
           "name": "game_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "user_id": {
-          "name": "user_id",
-          "type": "uuid",
+        "play_style": {
+          "name": "play_style",
+          "type": "play_style",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
-        },
-        "rating": {
-          "name": "rating",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "notes": {
-          "name": "notes",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "complexity_ratings_game_id_games_id_fk": {
-          "name": "complexity_ratings_game_id_games_id_fk",
-          "tableFrom": "complexity_ratings",
+        "game_play_styles_game_id_games_id_fk": {
+          "name": "game_play_styles_game_id_games_id_fk",
+          "tableFrom": "game_play_styles",
           "tableTo": "games",
           "columnsFrom": [
             "game_id"
@@ -265,22 +345,17 @@
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
-        },
-        "complexity_ratings_user_id_users_id_fk": {
-          "name": "complexity_ratings_user_id_users_id_fk",
-          "tableFrom": "complexity_ratings",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
+      "compositePrimaryKeys": {
+        "game_play_styles_game_id_play_style_pk": {
+          "name": "game_play_styles_game_id_play_style_pk",
+          "columns": [
+            "game_id",
+            "play_style"
+          ]
+        }
+      },
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
@@ -309,19 +384,55 @@
           "primaryKey": false,
           "notNull": true
         },
-        "details": {
-          "name": "details",
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "release_year": {
+          "name": "release_year",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "genres": {
+          "name": "genres",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "platforms": {
+          "name": "platforms",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
         "status": {
           "name": "status",
-          "type": "suggestion_status",
+          "type": "moderation_status",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
-          "default": "'submitted'"
+          "default": "'pending'"
+        },
+        "review_notes": {
+          "name": "review_notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reviewed_by": {
+          "name": "reviewed_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reviewed_at": {
+          "name": "reviewed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",
@@ -344,6 +455,19 @@
             "id"
           ],
           "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "game_suggestions_reviewed_by_users_id_fk": {
+          "name": "game_suggestions_reviewed_by_users_id_fk",
+          "tableFrom": "game_suggestions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "reviewed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
@@ -430,45 +554,72 @@
           "primaryKey": false,
           "notNull": true
         },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "description": {
           "name": "description",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "min_players": {
-          "name": "min_players",
+        "release_year": {
+          "name": "release_year",
           "type": "integer",
           "primaryKey": false,
+          "notNull": false
+        },
+        "min_age_recommendation": {
+          "name": "min_age_recommendation",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "official_rating": {
+          "name": "official_rating",
+          "type": "official_rating",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "difficulty_level": {
+          "name": "difficulty_level",
+          "type": "difficulty_level",
+          "typeSchema": "public",
+          "primaryKey": false,
           "notNull": true
+        },
+        "expertise_required": {
+          "name": "expertise_required",
+          "type": "expertise_level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "average_session_minutes": {
+          "name": "average_session_minutes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "content_notes": {
+          "name": "content_notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "max_players": {
           "name": "max_players",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
-        },
-        "min_play_time_minutes": {
-          "name": "min_play_time_minutes",
-          "type": "integer",
-          "primaryKey": false,
           "notNull": false
         },
-        "max_play_time_minutes": {
-          "name": "max_play_time_minutes",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "publisher": {
-          "name": "publisher",
+        "player_count_label": {
+          "name": "player_count_label",
           "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "published_year": {
-          "name": "published_year",
-          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
@@ -490,85 +641,15 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.reviews": {
-      "name": "reviews",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "game_id": {
-          "name": "game_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "content": {
-          "name": "content",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "rating": {
-          "name": "rating",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
+      "uniqueConstraints": {
+        "games_slug_unique": {
+          "name": "games_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug"
+          ]
         }
       },
-      "indexes": {},
-      "foreignKeys": {
-        "reviews_game_id_games_id_fk": {
-          "name": "reviews_game_id_games_id_fk",
-          "tableFrom": "reviews",
-          "tableTo": "games",
-          "columnsFrom": [
-            "game_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "reviews_user_id_users_id_fk": {
-          "name": "reviews_user_id_users_id_fk",
-          "tableFrom": "reviews",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -627,6 +708,73 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.sessions": {
+      "name": "sessions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "sessions_user_id_users_id_fk": {
+          "name": "sessions_user_id_users_id_fk",
+          "tableFrom": "sessions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "sessions_token_unique": {
+          "name": "sessions_token_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "token"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.tags": {
       "name": "tags",
       "schema": "",
@@ -654,8 +802,7 @@
           "name": "kind",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "default": "'category'"
+          "notNull": true
         }
       },
       "indexes": {},
@@ -764,6 +911,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "password_hash": {
+          "name": "password_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -790,6 +943,60 @@
     }
   },
   "enums": {
+    "public.difficulty_level": {
+      "name": "difficulty_level",
+      "schema": "public",
+      "values": [
+        "casual",
+        "moderate",
+        "challenging",
+        "hardcore"
+      ]
+    },
+    "public.expertise_level": {
+      "name": "expertise_level",
+      "schema": "public",
+      "values": [
+        "beginner",
+        "casual",
+        "intermediate",
+        "advanced",
+        "expert"
+      ]
+    },
+    "public.moderation_status": {
+      "name": "moderation_status",
+      "schema": "public",
+      "values": [
+        "pending",
+        "approved",
+        "rejected"
+      ]
+    },
+    "public.official_rating": {
+      "name": "official_rating",
+      "schema": "public",
+      "values": [
+        "E",
+        "E10",
+        "T",
+        "M",
+        "AO"
+      ]
+    },
+    "public.play_style": {
+      "name": "play_style",
+      "schema": "public",
+      "values": [
+        "solo",
+        "co-op",
+        "competitive",
+        "online-multiplayer",
+        "couch-co-op",
+        "story-driven",
+        "sandbox"
+      ]
+    },
     "public.role_slug": {
       "name": "role_slug",
       "schema": "public",
@@ -799,16 +1006,6 @@
         "contributor",
         "moderator",
         "admin"
-      ]
-    },
-    "public.suggestion_status": {
-      "name": "suggestion_status",
-      "schema": "public",
-      "values": [
-        "submitted",
-        "under_review",
-        "accepted",
-        "rejected"
       ]
     }
   },

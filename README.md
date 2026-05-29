@@ -1,143 +1,69 @@
 # GameFinder
 
-GameFinder is a public AI workflow testbed disguised as a realistic board-game discovery product. It helps users find, rank, and recommend board games based on age range, complexity, player count, play time, role or use case, and expertise level.
+GameFinder is a public AI workflow testbed disguised as a realistic **video game** discovery product. It helps users find, rank, and evaluate games by age suitability, difficulty, genre, platform, play style, content intensity, and community suggestions.
 
 ## Why This Project Exists
 
-Most AI tool comparisons happen on toy examples or one-off prompts. GameFinder provides a repeatable, realistic monorepo benchmark: shared types, PostgreSQL, Drizzle migrations, API, web and mobile clients, and seed data you can reset cleanly across machines.
+Most AI tool comparisons use toy examples. GameFinder provides a repeatable monorepo benchmark with shared types, PostgreSQL, Drizzle, RBAC, moderation workflows, web + mobile clients, and deterministic seed data.
 
 ## Current Status
 
-**Phase 1 complete — monorepo scaffolding**
+**Phase 2 — video game vertical slice**
 
-This initial commit establishes the Turborepo workspace, PostgreSQL schema, Drizzle migrations, deterministic seed data, and stub clients wired to a live API. The following are **not** implemented yet: authentication, RBAC enforcement, discovery filters, suggestion workflows, and moderation UI.
+Implemented:
 
-### What is in the repo now
-
-| Area | Status |
-|------|--------|
-| Turborepo + pnpm workspaces | Done |
-| Docker Compose (PostgreSQL) | Done |
-| Drizzle schema + migrations | Done |
-| Deterministic seed script | Done |
-| Shared types and Zod validation | Done |
-| API (`/health`, `/api/games`) | Done |
-| Web client (lists seeded games) | Stub |
-| Mobile client (Expo, lists seeded games) | Stub |
-| Auth and RBAC | Planned |
-| AI experiment docs | Planned (intentionally deferred) |
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|------------|
-| Monorepo | Turborepo, pnpm workspaces |
-| Web client | React, Vite, TypeScript |
-| Mobile client | Expo, React Native, TypeScript |
-| API | Node.js, Express, TypeScript |
-| Database | PostgreSQL, Drizzle ORM |
-| Local development | Docker Compose |
-
-## Monorepo Structure
-
-```
-GameFinder/
-├── apps/
-│   ├── web/          # React web client
-│   ├── mobile/       # Expo React Native app
-│   └── api/          # Node/TypeScript API
-├── packages/
-│   ├── shared/       # Shared types, validation, constants
-│   ├── db/           # Drizzle schema, migrations, seed
-│   └── config/       # Shared TypeScript config
-├── ai-context/       # AI workflow experiment context (future)
-└── docker-compose.yml
-```
+- Video game schema + 20-game seed catalog
+- Demo local auth (not production-ready)
+- RBAC with shared permission helpers
+- Web catalog, filters, game detail, suggestions, moderation, admin
+- Mobile read-only catalog with search and detail
+- Unit + API integration tests
 
 ## Quick Start
-
-Prerequisites: Node.js 20+, pnpm 9+, Docker
 
 ```bash
 cp .env.example .env
 docker compose up -d
 pnpm install
-pnpm db:seed
+pnpm db:reset
 pnpm dev
 ```
 
-That gives you:
+- Web: http://localhost:5173
+- API: http://localhost:3001
+- Postgres: localhost:5433
 
-- PostgreSQL on `localhost:5433` (mapped to avoid conflicts with a local Postgres on 5432)
-- Migrations applied and deterministic seed data loaded
-- API on `http://localhost:3001`
-- Web app on `http://localhost:5173`
-- Expo dev server via the mobile app package
+### Demo users (testbed auth only)
 
-### Reset local database
+| Email | Password | Role |
+|-------|----------|------|
+| admin@gametest.local | admin123 | admin |
+| moderator@gametest.local | mod123 | moderator |
+| user@gametest.local | user123 | user |
+| contributor@gametest.local | contrib123 | contributor |
 
-```bash
-docker compose down -v
-docker compose up -d
-pnpm db:seed
-```
+**Warning:** Demo credentials and session auth are for local testbed use only. Do not deploy this auth model to production.
 
-`pnpm db:seed` runs migrations and reseeds from scratch, so every machine gets the same baseline data.
-
-## Useful Commands
+## Commands
 
 | Command | Description |
 |---------|-------------|
-| `pnpm dev` | Start all app dev servers via Turborepo |
-| `pnpm build` | Build all packages and apps |
-| `pnpm db:generate` | Generate Drizzle migrations from schema changes |
-| `pnpm db:migrate` | Apply migrations only |
-| `pnpm db:seed` | Migrate + reset/seed development data |
-| `pnpm db:setup` | Alias for migrate then seed |
+| `pnpm dev` | Start all dev servers |
+| `pnpm build` | Build all packages/apps |
+| `pnpm test` | Run unit + integration tests |
+| `pnpm db:reset` | Wipe Postgres volume and reseed |
+| `pnpm db:seed` | Reseed existing database |
 
-## Database Schema
+## Documentation
 
-The initial Drizzle schema models the planned domain:
+- [docs/PROJECT_VISION.md](docs/PROJECT_VISION.md)
+- [docs/ARCHITECTURE_PLAN.md](docs/ARCHITECTURE_PLAN.md)
+- [docs/ROADMAP.md](docs/ROADMAP.md)
+- [docs/AI_WORKFLOW_TESTBED.md](docs/AI_WORKFLOW_TESTBED.md)
+- [docs/EXPERIMENT_TEMPLATE.md](docs/EXPERIMENT_TEMPLATE.md)
 
-- **Users and roles** — `users`, `roles`, `user_roles` (guest, user, contributor, moderator, admin)
-- **Catalog** — `games`, `tags`, `game_tags`
-- **Community data** — `age_ratings`, `complexity_ratings`, `reviews`
-- **User content** — `collections`, `collection_games`, `game_suggestions`
+## AI Testbed Value
 
-Migrations live in `packages/db/drizzle/`. The seed script truncates and reloads all tables for a clean, reproducible baseline.
+This repo stresses AI tools with realistic software work: domain modeling, RBAC, moderation queues, shared validation, multi-app wiring, seed scripts, and tests — without becoming a giant production app.
 
-### Seed data
-
-| Entity | Count |
-|--------|-------|
-| Roles | 5 |
-| Users | 3 (admin, moderator, parent) |
-| Tags | 4 (family, strategy, cooperative, party) |
-| Games | 3 (Ticket to Ride, Codenames, Pandemic) |
-
-Seed also includes sample age/complexity ratings, a review, a personal collection, and a pending game suggestion.
-
-## API Endpoints
-
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/health` | Service and database health check |
-| GET | `/api/games` | List seeded games with tags |
-
-## Core Feature Areas (planned)
-
-- Discovery by age, complexity, player count, play time, and tags
-- Community age and complexity ratings
-- Game suggestions and moderation
-- Personal collections
-- RBAC across guest, user, contributor, moderator, and admin roles
-
-## AI Workflow Testbed
-
-This repo is also a structured experiment surface for comparing AI-assisted development workflows across tools such as Cursor, Claude, ChatGPT, Replit, Lovable, Codex, and others.
-
-Project documentation and experiment logs are intentionally deferred — creating that material is part of the test process itself. Context files will live in `ai-context/` as experiments begin.
-
-## Contributing
-
-Public project associated with [One Regular Dev](https://oneregulardev.com). Issues, experiment logs, and workflow comparisons welcome.
+Public project associated with [One Regular Dev](https://oneregulardev.com).
