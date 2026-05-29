@@ -65,7 +65,7 @@ export const api = {
   login: (email: string, password: string) =>
     request<{ token: string; user: SessionUser }>("/api/auth/login", {
       method: "POST",
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, client: "web" }),
     }),
   logout: () =>
     request<{ ok: boolean }>("/api/auth/logout", { method: "POST" }),

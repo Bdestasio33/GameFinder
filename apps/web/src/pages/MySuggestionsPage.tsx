@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
 import { api } from "../api.js";
 import { useAuth, PERMISSIONS } from "../auth/AuthProvider.js";
 
@@ -16,10 +15,6 @@ export function MySuggestionsPage() {
     if (!user) return;
     api.mySuggestions().then(setData).catch(() => setData(null));
   }, [user]);
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
 
   if (!data) return <p>Loading suggestions...</p>;
 

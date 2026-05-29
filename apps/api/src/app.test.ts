@@ -4,6 +4,17 @@ import { createApp } from "./app.js";
 
 const hasDatabase = Boolean(process.env.DATABASE_URL);
 
+function loginAs(
+  app: ReturnType<typeof createApp>["app"],
+  email: string,
+  password: string,
+  client: "web" | "mobile",
+) {
+  return request(app)
+    .post("/api/auth/login")
+    .send({ email, password, client });
+}
+
 describe.skipIf(!hasDatabase)("API integration", () => {
   const { app } = createApp();
 
@@ -24,10 +35,13 @@ describe.skipIf(!hasDatabase)("API integration", () => {
     )).toBe(true);
   });
 
-  it("logs in demo users and exposes session info", async () => {
-    const response = await request(app)
-      .post("/api/auth/login")
-      .send({ email: "user@gametest.local", password: "user123" });
+  it("logs in mobile users and exposes session info", async () => {
+    const response = await loginAs(
+      app,
+      "user@gametest.local",
+      "user123",
+      "mobile",
+    );
 
     expect(response.status).toBe(200);
     expect(response.body.token).toBeTruthy();
@@ -41,10 +55,35 @@ describe.skipIf(!hasDatabase)("API integration", () => {
     expect(me.body.user.email).toBe("user@gametest.local");
   });
 
+  it("rejects staff accounts on mobile login", async () => {
+    const response = await loginAs(
+      app,
+      "moderator@gametest.local",
+      "mod123",
+      "mobile",
+    );
+
+    expect(response.status).toBe(403);
+  });
+
+  it("rejects user accounts on web login", async () => {
+    const response = await loginAs(
+      app,
+      "user@gametest.local",
+      "user123",
+      "web",
+    );
+
+    expect(response.status).toBe(403);
+  });
+
   it("allows users to submit age suggestions", async () => {
-    const login = await request(app)
-      .post("/api/auth/login")
-      .send({ email: "user@gametest.local", password: "user123" });
+    const login = await loginAs(
+      app,
+      "user@gametest.local",
+      "user123",
+      "mobile",
+    );
 
     const games = await request(app).get("/api/games?search=portal");
     const gameId = games.body[0].id;
@@ -62,9 +101,12 @@ describe.skipIf(!hasDatabase)("API integration", () => {
   });
 
   it("allows moderators to view the moderation queue", async () => {
-    const login = await request(app)
-      .post("/api/auth/login")
-      .send({ email: "moderator@gametest.local", password: "mod123" });
+    const login = await loginAs(
+      app,
+      "moderator@gametest.local",
+      "mod123",
+      "web",
+    );
 
     const response = await request(app)
       .get("/api/moderation/queue")
@@ -75,9 +117,12 @@ describe.skipIf(!hasDatabase)("API integration", () => {
   });
 
   it("allows admins to create and delete games", async () => {
-    const login = await request(app)
-      .post("/api/auth/login")
-      .send({ email: "admin@gametest.local", password: "admin123" });
+    const login = await loginAs(
+      app,
+      "admin@gametest.local",
+      "admin123",
+      "web",
+    );
 
     const created = await request(app)
       .post("/api/admin/games")
@@ -116,9 +161,12 @@ describe.skipIf(!hasDatabase)("API integration", () => {
   });
 
   it("rejects regular users from moderation and admin routes", async () => {
-    const login = await request(app)
-      .post("/api/auth/login")
-      .send({ email: "user@gametest.local", password: "user123" });
+    const login = await loginAs(
+      app,
+      "user@gametest.local",
+      "user123",
+      "mobile",
+    );
 
     const moderation = await request(app)
       .get("/api/moderation/queue")
@@ -141,9 +189,12 @@ describe.skipIf(!hasDatabase)("API integration", () => {
   });
 
   it("returns 404 for moderation updates on missing suggestions", async () => {
-    const login = await request(app)
-      .post("/api/auth/login")
-      .send({ email: "moderator@gametest.local", password: "mod123" });
+    const login = await loginAs(
+      app,
+      "moderator@gametest.local",
+      "mod123",
+      "web",
+    );
 
     const response = await request(app)
       .patch("/api/moderation/age-suggestions/00000000-0000-0000-0000-000000000000")

@@ -16,26 +16,31 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { DEMO_USERS } from "@gamefinder/shared";
+import { DEMO_USERS, WEB_CLIENT_ROLES } from "@gamefinder/shared";
 import { useAuth } from "../auth/AuthProvider.js";
+import { canUseWebClient, getRoleHome } from "../auth/role-access.js";
+
+const STAFF_DEMO_USERS = DEMO_USERS.filter((demoUser) =>
+  (WEB_CLIENT_ROLES as readonly string[]).includes(demoUser.role),
+);
 
 export function LoginPage() {
   const { login, user } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("user@gametest.local");
-  const [password, setPassword] = useState("user123");
+  const [email, setEmail] = useState("moderator@gametest.local");
+  const [password, setPassword] = useState("mod123");
   const [error, setError] = useState<string | null>(null);
 
-  if (user) {
-    return <Navigate to="/" replace />;
+  if (user && canUseWebClient(user.role)) {
+    return <Navigate to={getRoleHome(user.role)} replace />;
   }
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     setError(null);
     try {
-      await login(email, password);
-      navigate("/");
+      const loggedInUser = await login(email, password);
+      navigate(getRoleHome(loggedInUser.role));
     } catch (submitError) {
       setError(
         submitError instanceof Error ? submitError.message : "Login failed",
@@ -55,11 +60,12 @@ export function LoginPage() {
         <CardContent sx={{ p: 3 }}>
           <Stack spacing={3}>
             <Box>
-              <Typography variant="h4" component="h1" gutterBottom>
-                Login
+              <Typography variant="h4" component="h1" gutterBottom data-testid="staff-login-heading">
+                Staff login
               </Typography>
               <Typography color="text.secondary">
-                Demo auth for the GameFinder testbed. Not production-ready.
+                Web portal for moderators and admins. User accounts sign in through
+                the mobile app.
               </Typography>
             </Box>
 
@@ -90,12 +96,12 @@ export function LoginPage() {
 
             <Box>
               <Typography variant="subtitle2" gutterBottom>
-                Demo accounts
+                Staff demo accounts
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
                 Click a row to fill the form.
               </Typography>
-              <TableContainer>
+              <TableContainer data-testid="staff-demo-accounts">
                 <Table size="small">
                   <TableHead>
                     <TableRow>
@@ -105,7 +111,7 @@ export function LoginPage() {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {DEMO_USERS.map((demoUser) => (
+                    {STAFF_DEMO_USERS.map((demoUser) => (
                       <TableRow
                         key={demoUser.email}
                         hover

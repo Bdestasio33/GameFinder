@@ -1,6 +1,12 @@
 import { Router, type Router as RouterType } from "express";
 import type { Database } from "@gamefinder/db";
-import { loginSchema, sessionUserSchema } from "@gamefinder/shared";
+import {
+  getClientRoleError,
+  isRoleAllowedForClient,
+  loginSchema,
+  sessionUserSchema,
+} from "@gamefinder/shared";
+import type { RoleSlug } from "@gamefinder/shared";
 import {
   type AuthenticatedRequest,
 } from "../middleware/auth.js";
@@ -22,9 +28,16 @@ export function createAuthRouter(db: Database): RouterType {
       return;
     }
 
+    const user = sessionUserSchema.parse(result.user);
+    if (!isRoleAllowedForClient(user.role as RoleSlug, body.data.client)) {
+      await logoutUser(db, result.token);
+      response.status(403).json({ error: getClientRoleError(body.data.client) });
+      return;
+    }
+
     response.json({
       token: result.token,
-      user: sessionUserSchema.parse(result.user),
+      user,
     });
   });
 

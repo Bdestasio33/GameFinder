@@ -1,3 +1,4 @@
+export * from "./client-roles.js";
 export * from "./constants.js";
 export * from "./demo-users.js";
 export * from "./permissions.js";

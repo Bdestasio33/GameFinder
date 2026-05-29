@@ -11,11 +11,18 @@
     "db:seed": "pnpm --filter @gamefinder/db seed",
     "db:setup": "pnpm db:migrate && pnpm db:seed",
     "db:reset": "bash scripts/db-reset.sh",
-    "test": "turbo test"
+    "test": "turbo test && vitest run",
+    "test:unit": "turbo test && vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:install": "playwright install chromium"
   },
   "devDependencies": {
+    "@gamefinder/shared": "workspace:*",
+    "@playwright/test": "^1.52.0",
+    "dotenv": "^16.5.0",
     "turbo": "^2.5.4",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
   },
   "packageManager": "pnpm@9.15.9",
   "engines": {

@@ -115,7 +115,7 @@ function CatalogApp() {
             <Text style={styles.eyebrow}>GameFinder</Text>
             <Text style={styles.title}>Video game catalog</Text>
             <Text style={styles.body}>
-              {user.displayName} · {user.role}
+              Signed in as {user.displayName} · {user.role}
             </Text>
           </View>
           <Button

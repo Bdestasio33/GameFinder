@@ -1,8 +1,12 @@
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Button, Card, Input, Text } from "@rneui/themed";
-import { DEMO_USERS } from "@gamefinder/shared";
+import { DEMO_USERS, MOBILE_CLIENT_ROLES } from "@gamefinder/shared";
 import { login, type SessionUser } from "./api-client";
+
+const MOBILE_DEMO_USERS = DEMO_USERS.filter((demoUser) =>
+  (MOBILE_CLIENT_ROLES as readonly string[]).includes(demoUser.role),
+);
 
 type LoginScreenProps = {
   onLogin: (token: string, user: SessionUser) => void;
@@ -39,10 +43,11 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
     <ScrollView contentContainerStyle={styles.container}>
       <Card containerStyle={styles.card}>
         <Text h3 style={styles.title}>
-          Login
+          Sign in
         </Text>
         <Text style={styles.subtitle}>
-          Demo auth for the GameFinder testbed. Not production-ready.
+          Mobile app for user accounts. Moderators and admins use the web staff
+          portal.
         </Text>
 
         <Input
@@ -68,7 +73,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
           buttonStyle={styles.button}
         />
 
-        <Text style={styles.tableTitle}>Demo accounts</Text>
+        <Text style={styles.tableTitle}>User demo accounts</Text>
         <Text style={styles.tableHint}>Tap a row to fill the form.</Text>
 
         <View style={styles.table}>
@@ -83,7 +88,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
               Password
             </Text>
           </View>
-          {DEMO_USERS.map((demoUser) => (
+          {MOBILE_DEMO_USERS.map((demoUser) => (
             <Pressable
               key={demoUser.email}
               style={styles.dataRow}

@@ -1,10 +1,7 @@
-import { FormEvent, useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { FormEvent, useState } from "react";
 import { api } from "../api.js";
-import { useAuth, PERMISSIONS } from "../auth/AuthProvider.js";
 
 export function SubmitGamePage() {
-  const { can } = useAuth();
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -13,10 +10,6 @@ export function SubmitGamePage() {
     platforms: "pc",
   });
   const [message, setMessage] = useState<string | null>(null);
-
-  if (!can(PERMISSIONS.SUBMIT_GAME_SUGGESTION)) {
-    return <Navigate to="/login" replace />;
-  }
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();

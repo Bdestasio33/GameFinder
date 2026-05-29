@@ -1,4 +1,3 @@
-import { DEMO_USERS } from "@gamefinder/shared";
 import { getApiUrl } from "./api-url";
 
 const API_URL = getApiUrl();
@@ -17,11 +16,14 @@ export async function login(
   const response = await fetch(`${API_URL}/api/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, password, client: "mobile" }),
   });
 
   if (!response.ok) {
-    throw new Error("Invalid email or password");
+    const body = (await response.json().catch(() => null)) as
+      | { error?: string }
+      | null;
+    throw new Error(body?.error ?? "Invalid email or password");
   }
 
   return response.json() as Promise<{ token: string; user: SessionUser }>;

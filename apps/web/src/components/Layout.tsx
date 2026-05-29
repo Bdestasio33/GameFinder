@@ -1,12 +1,16 @@
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { useAuth, PERMISSIONS } from "../auth/AuthProvider.js";
+import { useAuth } from "../auth/AuthProvider.js";
+import { getNavItems, getRoleHome } from "../auth/role-access.js";
 import { api } from "../api.js";
 
 export function Layout() {
-  const { user, logout, can } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [pendingCount, setPendingCount] = useState(0);
+  const navItems = getNavItems(user?.role);
+  const showPendingCount = user?.role === "moderator";
+  const brandLink = user ? getRoleHome(user.role) : "/login";
 
   async function handleLogout() {
     await logout();
@@ -14,7 +18,8 @@ export function Layout() {
   }
 
   useEffect(() => {
-    if (!can(PERMISSIONS.VIEW_MODERATION_QUEUE)) {
+    if (!showPendingCount) {
+      setPendingCount(0);
       return;
     }
 
@@ -22,34 +27,27 @@ export function Layout() {
       .pendingCounts()
       .then((counts) => setPendingCount(counts.total))
       .catch(() => setPendingCount(0));
-  }, [user, can]);
+  }, [user, showPendingCount]);
 
   return (
     <div className="app-shell">
       <header className="top-nav">
         <div className="nav-inner">
-          <Link to="/" className="brand">
+          <Link to={brandLink} className="brand">
             GameFinder
           </Link>
-          <nav className="nav-links">
-            <NavLink to="/">Catalog</NavLink>
-            {user ? (
-              <>
-                <NavLink to="/my-suggestions">My Suggestions</NavLink>
-                {can(PERMISSIONS.SUBMIT_GAME_SUGGESTION) ? (
-                  <NavLink to="/submit-game">Submit Game</NavLink>
-                ) : null}
-                {can(PERMISSIONS.VIEW_MODERATION_QUEUE) ? (
-                  <NavLink to="/moderation">
-                    Moderation{pendingCount ? ` (${pendingCount})` : ""}
-                  </NavLink>
-                ) : null}
-                {can(PERMISSIONS.MANAGE_GAMES) ? (
-                  <NavLink to="/admin">Admin</NavLink>
-                ) : null}
-              </>
-            ) : null}
-          </nav>
+          {navItems.length ? (
+            <nav className="nav-links">
+              {navItems.map((item) => (
+                <NavLink key={item.to} to={item.to}>
+                  {item.label}
+                  {item.showPendingCount && pendingCount
+                    ? ` (${pendingCount})`
+                    : ""}
+                </NavLink>
+              ))}
+            </nav>
+          ) : null}
           <div className="nav-actions">
             {user ? (
               <>

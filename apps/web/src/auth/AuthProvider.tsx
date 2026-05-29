@@ -6,13 +6,13 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { hasPermission, PERMISSIONS, type Permission, type RoleSlug } from "@gamefinder/shared";
+import { hasPermission, isRoleAllowedForClient, PERMISSIONS, type Permission, type RoleSlug } from "@gamefinder/shared";
 import { api, setAuthToken, type SessionUser } from "../api.js";
 
 type AuthContextValue = {
   user: SessionUser | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<SessionUser>;
   logout: () => Promise<void>;
   can: (permission: Permission) => boolean;
 };
@@ -26,7 +26,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     api
       .me()
-      .then(({ user: currentUser }) => setUser(currentUser))
+      .then(({ user: currentUser }) => {
+        if (!isRoleAllowedForClient(currentUser.role as RoleSlug, "web")) {
+          setAuthToken(null);
+          setUser(null);
+          return;
+        }
+
+        setUser(currentUser);
+      })
       .catch(() => {
         setAuthToken(null);
         setUser(null);
@@ -42,6 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const result = await api.login(email, password);
         setAuthToken(result.token);
         setUser(result.user);
+        return result.user;
       },
       async logout() {
         try {

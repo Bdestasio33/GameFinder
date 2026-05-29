@@ -31,6 +31,12 @@ describe("permissions", () => {
       hasPermission("moderator", PERMISSIONS.VIEW_MODERATION_QUEUE),
     ).toBe(true);
     expect(hasPermission("moderator", PERMISSIONS.MANAGE_GAMES)).toBe(false);
+    expect(hasPermission("moderator", PERMISSIONS.SUBMIT_GAME_SUGGESTION)).toBe(
+      false,
+    );
+    expect(hasPermission("moderator", PERMISSIONS.SUBMIT_AGE_SUGGESTION)).toBe(
+      false,
+    );
   });
 
   it("allows admins to manage games and users", () => {

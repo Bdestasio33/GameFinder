@@ -1,5 +1,4 @@
 import { FormEvent, useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
 import { api, type VideoGame } from "../api.js";
 import { useAuth, PERMISSIONS } from "../auth/AuthProvider.js";
 
@@ -33,10 +32,6 @@ export function AdminPage() {
     }
   }, [can]);
 
-  if (!can(PERMISSIONS.MANAGE_GAMES)) {
-    return <Navigate to="/" replace />;
-  }
-
   async function handleCreate(event: FormEvent) {
     event.preventDefault();
     await api.adminCreateGame(form);
@@ -68,6 +63,22 @@ export function AdminPage() {
               value={form.description}
               onChange={(event) =>
                 setForm({ ...form, description: event.target.value })
+              }
+              required
+            />
+          </label>
+          <label>
+            Minimum recommended age (years)
+            <input
+              type="number"
+              min={1}
+              max={99}
+              value={form.minAgeRecommendation}
+              onChange={(event) =>
+                setForm({
+                  ...form,
+                  minAgeRecommendation: Number(event.target.value),
+                })
               }
               required
             />

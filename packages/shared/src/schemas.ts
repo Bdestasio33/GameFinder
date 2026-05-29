@@ -47,6 +47,7 @@ export type VideoGame = z.infer<typeof videoGameSchema>;
 export const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
+  client: z.enum(["web", "mobile"]),
 });
 
 export const ageSuggestionInputSchema = z.object({
@@ -73,7 +74,7 @@ export const gameUpsertSchema = z.object({
   slug: z.string().min(1).max(120).optional(),
   description: z.string().min(1).max(2000),
   releaseYear: z.number().int().nullable().optional(),
-  minAgeRecommendation: z.number().int().nullable().optional(),
+  minAgeRecommendation: z.number().int().min(1).max(99),
   officialRating: officialRatingSchema.nullable().optional(),
   difficultyLevel: difficultyLevelSchema,
   expertiseRequired: expertiseLevelSchema,

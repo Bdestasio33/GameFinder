@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
 import { api } from "../api.js";
-import { useAuth, PERMISSIONS } from "../auth/AuthProvider.js";
 
 export function ModerationPage() {
-  const { can } = useAuth();
   const [queue, setQueue] = useState<{
     counts: { total: number };
     ageSuggestions: Array<{ id: string; suggestedMinAge: number; rationale: string; game: { title: string } }>;
@@ -17,14 +14,8 @@ export function ModerationPage() {
   }
 
   useEffect(() => {
-    if (can(PERMISSIONS.VIEW_MODERATION_QUEUE)) {
-      void refresh();
-    }
-  }, [can]);
-
-  if (!can(PERMISSIONS.VIEW_MODERATION_QUEUE)) {
-    return <Navigate to="/" replace />;
-  }
+    void refresh();
+  }, []);
 
   if (!queue) return <p>Loading moderation queue...</p>;
 
