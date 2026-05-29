@@ -2,7 +2,7 @@ import { closeDb, createDb, isDatabaseConnected } from "@gamefinder/db";
 import { hasPermission, healthResponseSchema, PERMISSIONS } from "@gamefinder/shared";
 import cors from "cors";
 import express from "express";
-import type { Application } from "express";
+import type { Application, NextFunction, Request, Response } from "express";
 import type { Server } from "node:http";
 import type { Database } from "@gamefinder/db";
 import { getDatabaseUrl } from "./env.js";
@@ -68,6 +68,18 @@ export function createApp(): { app: Application; db: Database } {
   app.use("/api", createSuggestionsRouter(db));
   app.use("/api/moderation", createModerationRouter(db));
   app.use("/api/admin", createAdminRouter(db));
+
+  app.use(
+    (
+      error: unknown,
+      _request: Request,
+      response: Response,
+      _next: NextFunction,
+    ) => {
+      console.error(error);
+      response.status(500).json({ error: "Internal server error" });
+    },
+  );
 
   return { app, db };
 }

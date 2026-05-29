@@ -179,6 +179,12 @@ export function createSuggestionsRouter(db: Database): RouterType {
         authRequest.user!.id,
         String(request.params.gameId),
       );
+
+      if (!result) {
+        response.status(404).json({ error: "Game not found" });
+        return;
+      }
+
       response.json(result);
     },
   );

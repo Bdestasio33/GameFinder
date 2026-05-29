@@ -73,6 +73,11 @@ export function createModerationRouter(db: Database): RouterType {
         .where(eq(ageSuggestions.id, String(request.params.id)))
         .returning();
 
+      if (!updated) {
+        response.status(404).json({ error: "Suggestion not found" });
+        return;
+      }
+
       response.json(updated);
     },
   );
@@ -100,6 +105,11 @@ export function createModerationRouter(db: Database): RouterType {
         .where(eq(expertiseSuggestions.id, String(request.params.id)))
         .returning();
 
+      if (!updated) {
+        response.status(404).json({ error: "Suggestion not found" });
+        return;
+      }
+
       response.json(updated);
     },
   );
@@ -126,6 +136,11 @@ export function createModerationRouter(db: Database): RouterType {
         })
         .where(eq(gameSuggestions.id, String(request.params.id)))
         .returning();
+
+      if (!updated) {
+        response.status(404).json({ error: "Suggestion not found" });
+        return;
+      }
 
       response.json(updated);
     },

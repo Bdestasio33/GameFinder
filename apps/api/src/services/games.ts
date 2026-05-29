@@ -268,7 +268,12 @@ export async function updateGame(
 }
 
 export async function deleteGame(db: Database, gameId: string) {
-  await db.delete(games).where(eq(games.id, gameId));
+  const [deleted] = await db
+    .delete(games)
+    .where(eq(games.id, gameId))
+    .returning({ id: games.id });
+
+  return deleted ?? null;
 }
 
 export async function toggleFavorite(
@@ -276,6 +281,14 @@ export async function toggleFavorite(
   userId: string,
   gameId: string,
 ) {
+  const game = await db.query.games.findFirst({
+    where: eq(games.id, gameId),
+  });
+
+  if (!game) {
+    return null;
+  }
+
   const existing = await db.query.favorites.findFirst({
     where: and(eq(favorites.userId, userId), eq(favorites.gameId, gameId)),
   });

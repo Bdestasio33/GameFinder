@@ -106,4 +106,50 @@ describe.skipIf(!hasDatabase)("API integration", () => {
 
     expect(deleted.status).toBe(200);
   });
+
+  it("rejects unauthenticated access to protected routes", async () => {
+    const me = await request(app).get("/api/auth/me");
+    expect(me.status).toBe(401);
+
+    const suggestions = await request(app).get("/api/me/suggestions");
+    expect(suggestions.status).toBe(401);
+  });
+
+  it("rejects regular users from moderation and admin routes", async () => {
+    const login = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "user@gametest.local", password: "user123" });
+
+    const moderation = await request(app)
+      .get("/api/moderation/queue")
+      .set("Authorization", `Bearer ${login.body.token}`);
+    expect(moderation.status).toBe(403);
+
+    const adminCreate = await request(app)
+      .post("/api/admin/games")
+      .set("Authorization", `Bearer ${login.body.token}`)
+      .send({
+        title: "Blocked Game",
+        description: "Regular users should not be able to create catalog entries.",
+        difficultyLevel: "moderate",
+        expertiseRequired: "intermediate",
+        playStyles: ["solo"],
+        genres: ["action"],
+        platforms: ["pc"],
+      });
+    expect(adminCreate.status).toBe(403);
+  });
+
+  it("returns 404 for moderation updates on missing suggestions", async () => {
+    const login = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "moderator@gametest.local", password: "mod123" });
+
+    const response = await request(app)
+      .patch("/api/moderation/age-suggestions/00000000-0000-0000-0000-000000000000")
+      .set("Authorization", `Bearer ${login.body.token}`)
+      .send({ status: "approved" });
+
+    expect(response.status).toBe(404);
+  });
 });

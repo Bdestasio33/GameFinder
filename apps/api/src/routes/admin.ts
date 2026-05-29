@@ -107,12 +107,27 @@ export function createAdminRouter(db: Database): RouterType {
     "/games/:id",
     requirePermission(PERMISSIONS.MANAGE_GAMES),
     async (request, response) => {
-      await deleteGame(db, String(request.params.id));
+      const deleted = await deleteGame(db, String(request.params.id));
+
+      if (!deleted) {
+        response.status(404).json({ error: "Game not found" });
+        return;
+      }
+
       response.json({ ok: true });
     },
   );
 
   return router;
+}
+
+function parseOptionalInt(value: unknown): number | undefined {
+  if (value === undefined || value === null || value === "") {
+    return undefined;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
 }
 
 export function createGamesRouter(db: Database): RouterType {
@@ -121,9 +136,7 @@ export function createGamesRouter(db: Database): RouterType {
   router.get("/", async (request, response) => {
     const gamesList = await listGames(db, {
       search: request.query.search as string | undefined,
-      maxAge: request.query.maxAge
-        ? Number(request.query.maxAge)
-        : undefined,
+      maxAge: parseOptionalInt(request.query.maxAge),
       difficulty: request.query.difficulty as never,
       expertise: request.query.expertise as never,
       genre: request.query.genre as string | undefined,
